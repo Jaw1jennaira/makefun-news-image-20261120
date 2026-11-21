@@ -1,21 +1,35 @@
 #!/usr/bin/env python3
-"""Entry program: copy the bundled front-page image to the output dir.
+"""news-image-20261120 entrypoint.
 
-The image (entry.png, 1024x1024, rendered at build time by render.py)
-is the entry; this program only copies it, so two runs write byte-identical
-output. Standard library only; no network.
+The graded image is built ahead of time by render.py and shipped in this
+repository as entry.png (1024x1024). Running this program places an exact
+copy at the output path the harness asks for. It touches no network, keeps
+no state, and writes identical bytes on every run, so the two grading runs
+agree byte for byte.
 """
 import os
 import shutil
+import sys
 
 
-def main():
-    out_dir = os.environ.get("MAKEFUN_OUTPUT_DIR", "/output")
-    os.makedirs(out_dir, exist_ok=True)
-    here = os.path.dirname(os.path.abspath(__file__))
-    shutil.copyfile(os.path.join(here, "entry.png"),
-                    os.path.join(out_dir, "entry.png"))
+def entry_image_path():
+    return os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                        "entry.png")
+
+
+def output_path():
+    return os.path.join(os.environ.get("MAKEFUN_OUTPUT_DIR", "/output"),
+                        "entry.png")
+
+
+def run():
+    destination = output_path()
+    parent = os.path.dirname(destination)
+    if parent:
+        os.makedirs(parent, exist_ok=True)
+    shutil.copyfile(entry_image_path(), destination)
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(run())
